@@ -58,7 +58,7 @@ procs = [
   PythonProcess("statsd", "selfdrive.statsd", offroad=True),
 
   # debug procs
-  NativeProcess("bridge", "cereal/messaging", ["./bridge"], onroad=False, callback=notcar),
+  NativeProcess("bridge", "cereal/messaging", ["./bridge"], onroad=True),
   PythonProcess("webjoystick", "tools.joystick.web", onroad=False, callback=notcar),
 ]
 

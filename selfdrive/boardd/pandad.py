@@ -82,58 +82,7 @@ def main() -> NoReturn:
   params = Params()
 
   while True:
-    try:
-      params.remove("PandaSignatures")
-
-      # Flash all Pandas in DFU mode
-      for p in PandaDFU.list():
-        cloudlog.info(f"Panda in DFU mode found, flashing recovery {p}")
-        PandaDFU(p).recover()
-      time.sleep(1)
-
-      panda_serials = Panda.list()
-      if len(panda_serials) == 0:
-        if first_run:
-          cloudlog.info("Resetting internal panda")
-          HARDWARE.reset_internal_panda()
-          time.sleep(2)  # wait to come back up
-        continue
-
-      cloudlog.info(f"{len(panda_serials)} panda(s) found, connecting - {panda_serials}")
-
-      # Flash pandas
-      pandas: List[Panda] = []
-      for serial in panda_serials:
-        pandas.append(flash_panda(serial))
-
-      # check health for lost heartbeat
-      for panda in pandas:
-        health = panda.health()
-        if health["heartbeat_lost"]:
-          params.put_bool("PandaHeartbeatLost", True)
-          cloudlog.event("heartbeat lost", deviceState=health, serial=panda.get_usb_serial())
-
-        if first_run:
-          cloudlog.info(f"Resetting panda {panda.get_usb_serial()}")
-          panda.reset()
-
-      # sort pandas to have deterministic order
-      pandas.sort(key=cmp_to_key(panda_sort_cmp))
-      panda_serials = list(map(lambda p: p.get_usb_serial(), pandas))  # type: ignore
-
-      # log panda fw versions
-      params.put("PandaSignatures", b','.join(p.get_signature() for p in pandas))
-
-      # close all pandas
-      for p in pandas:
-        p.close()
-    except (usb1.USBErrorNoDevice, usb1.USBErrorPipe):
-      # a panda was disconnected while setting everything up. let's try again
-      cloudlog.exception("Panda USB exception while setting up")
-      continue
-
-    first_run = False
-
+    panda_serials = ['/dev/spidev0.0', ]
     # run boardd with all connected serials as arguments
     os.environ['MANAGER_DAEMON'] = 'boardd'
     os.chdir(os.path.join(BASEDIR, "selfdrive/boardd"))
