@@ -25,6 +25,7 @@ public:
   static void reboot() { std::system("sudo reboot"); };
   static void poweroff() { std::system("sudo poweroff"); };
   static void set_brightness(int percent) {
+    percent = 100;
     std::ofstream brightness_control("/sys/class/backlight/panel0-backlight/brightness");
     if (brightness_control.is_open()) {
       brightness_control << (percent * (int)(1023/100.)) << "\n";
@@ -32,6 +33,7 @@ public:
     }
   };
   static void set_display_power(bool on) {
+    on = true;
     std::ofstream bl_power_control("/sys/class/backlight/panel0-backlight/bl_power");
     if (bl_power_control.is_open()) {
       bl_power_control << (on ? "0" : "4") << "\n";
