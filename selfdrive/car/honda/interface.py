@@ -21,6 +21,8 @@ class CarInterface(CarInterfaceBase):
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
     if CP.carFingerprint in HONDA_BOSCH:
       return CarControllerParams.BOSCH_ACCEL_MIN, CarControllerParams.BOSCH_ACCEL_MAX
+    elif CP.enableGasInterceptor:
+      return CarControllerParams.NIDEC_ACCEL_MIN, CarControllerParams.NIDEC_ACCEL_MAX
     else:
       # NIDECs don't allow acceleration near cruise_speed,
       # so limit limits of pid to prevent windup
@@ -68,6 +70,8 @@ class CarInterface(CarInterfaceBase):
     ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0], [0]]
     ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
     ret.lateralTuning.pid.kf = 0.00006  # conservative feed-forward
+    ret.steerActuatorDelay = 0.1
+    ret.steerLimitTimer = 0.8
 
     if candidate in HONDA_BOSCH:
       ret.longitudinalTuning.kpV = [0.25]
@@ -241,13 +245,26 @@ class CarInterface(CarInterfaceBase):
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.38], [0.11]]
 
     elif candidate == CAR.RIDGELINE:
-      ret.mass = 4515. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.mass = 4575. * CV.LB_TO_KG + STD_CARGO_KG
       ret.wheelbase = 3.18
       ret.centerToFront = ret.wheelbase * 0.41
-      ret.steerRatio = 15.59  # as spec
+      ret.steerRatio = 15.86  # specs: 15.59 for 2017-20 , 15.86 for 2021-23
+      ret.vEgoStopping = 0.15 # reduced from 0.5 to reduce "slam stop"
+      ret.stopAccel = -0.5 # reduced from -2.0 to test hill holding capability and see what value is best
+      ret.stoppingDecelRate = 0.15 # brake_travel/s (m/s^2/s) while trying to fully stop. Reach stopping target smoothly default = 0.8
       ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096], [0, 4096]]  # TODO: determine if there is a dead zone at the top end
+      ret.steerActuatorDelay = 0.15
       tire_stiffness_factor = 0.444
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.38], [0.11]]
+      #ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.38], [0.11]]
+      #ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]] # [[0.], [0.]]
+      #ret.lateralTuning.pid.kf = 0.00006  # conservative feed-forward
+      CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning) # Use Lateral Torque Controller instead of PIF
+      ret.longitudinalTuning.kpBP = [0., 5., 35.] # mph = [0, 11, 78]
+      ret.longitudinalTuning.kpV = [1.4, 1.6, 1.4] # adjustment from [1.2, 0.8, 0.5] because OP is not stopping the car fast enough.
+      ret.longitudinalTuning.kiBP = [0., 35.]
+      ret.longitudinalTuning.kiV = [0.25, 0.12]
+      ret.longitudinalTuning.deadzoneBP = [0.]
+      ret.longitudinalTuning.deadzoneV = [0.]
 
     elif candidate == CAR.INSIGHT:
       ret.mass = 2987. * CV.LB_TO_KG + STD_CARGO_KG
@@ -295,9 +312,6 @@ class CarInterface(CarInterfaceBase):
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
                                                                          tire_stiffness_factor=tire_stiffness_factor)
 
-    ret.steerActuatorDelay = 0.1
-    ret.steerLimitTimer = 0.8
-
     return ret
 
   @staticmethod
@@ -315,7 +329,7 @@ class CarInterface(CarInterfaceBase):
       buttonEvents.append(create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT))
 
     if self.CS.cruise_setting != self.CS.prev_cruise_setting:
-      buttonEvents.append(create_button_event(self.CS.cruise_setting, self.CS.prev_cruise_setting, {1: ButtonType.altButton1}))
+      buttonEvents.append(create_button_event(self.CS.cruise_setting, self.CS.prev_cruise_setting, {1: ButtonType.altButton1, 3: ButtonType.gapAdjustCruise}))
 
     ret.buttonEvents = buttonEvents
 

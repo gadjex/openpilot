@@ -22,7 +22,7 @@ def compute_gb_honda_bosch(accel, speed):
 def compute_gb_honda_nidec(accel, speed):
   creep_brake = 0.0
   creep_speed = 2.3
-  creep_brake_value = 0.15
+  creep_brake_value = 0.1
   if speed < creep_speed:
     creep_brake = (creep_speed - speed) / creep_speed * creep_brake_value
   gb = float(accel) / 4.8 - creep_brake
@@ -61,6 +61,8 @@ def actuator_hysteresis(brake, braking, brake_steady, v_ego, car_fingerprint):
 
 
 def brake_pump_hysteresis(apply_brake, apply_brake_last, last_pump_ts, ts):
+  # 22 Ridgelines ABS module will control the pump as needed
+  return False, ts
   pump_on = False
 
   # reset pump timer if:
@@ -233,7 +235,7 @@ class CarController:
 
           if self.CP.enableGasInterceptor:
             # way too aggressive at low speed without this
-            gas_mult = interp(CS.out.vEgo, [0., 10.], [0.4, 1.0])
+            gas_mult = interp(CS.out.vEgo, [0., 10.], [0.43, 1.0])
             # send exactly zero if apply_gas is zero. Interceptor will send the max between read value and apply_gas.
             # This prevents unexpected pedal range rescaling
             # Sending non-zero gas when OP is not enabled will cause the PCM not to respond to throttle as expected
