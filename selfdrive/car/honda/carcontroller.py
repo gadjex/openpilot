@@ -62,7 +62,7 @@ def actuator_hysteresis(brake, braking, brake_steady, v_ego, car_fingerprint):
 
 def brake_pump_hysteresis(apply_brake, apply_brake_last, last_pump_ts, ts):
   # 22 Ridgelines ABS module will control the pump as needed
-  return False, ts
+  #return False, ts
   pump_on = False
 
   # reset pump timer if:
