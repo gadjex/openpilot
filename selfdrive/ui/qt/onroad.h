@@ -42,6 +42,8 @@ class AnnotatedCameraWidget : public CameraWidget {
   Q_PROPERTY(bool rightHandDM MEMBER rightHandDM);
   Q_PROPERTY(int status MEMBER status);
 
+  Q_PROPERTY(float brake MEMBER brake);
+
 public:
   explicit AnnotatedCameraWidget(VisionStreamType type, QWidget* parent = 0);
   void updateState(const UIState &s);
@@ -49,6 +51,7 @@ public:
 private:
   void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
+  void drawTextwColor(QPainter &p, QColor color, int x, int y, const QString &text);
 
   QPixmap engage_img;
   QPixmap experimental_img;
@@ -73,6 +76,8 @@ private:
 
   int skip_frame_count = 0;
   bool wide_cam_requested = false;
+
+  float brake;
 
 protected:
   void paintGL() override;

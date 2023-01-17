@@ -227,6 +227,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   setProperty("hideDM", cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
   setProperty("status", s.status);
 
+  setProperty("brake", sm["carControl"].getCarControl().getActuatorsOutput().getBrake());
+
   // update engageability and DM icons at 2Hz
   if (sm.frame % (UI_FREQ / 2) == 0) {
     setProperty("engageable", cs.getEngageable() || cs.getEnabled());
@@ -378,23 +380,29 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   // current speed
   configFont(p, "Inter", 176, "Bold");
-  drawText(p, rect().center().x(), 210, speedStr);
+  if (brake > 0)
+    drawTextwColor(p, redColor(), rect().center().x(), 210, speedStr);
+  else
+    drawText(p, rect().center().x(), 210, speedStr);
   configFont(p, "Inter", 66, "Regular");
-  drawText(p, rect().center().x(), 290, speedUnit, 200);
+  if (brake > 0)
+    drawTextwColor(p, redColor(200), rect().center().x(), 290, speedUnit);
+  else
+    drawText(p, rect().center().x(), 290, speedUnit, 200);
 
   // engage-ability icon
-  if (engageable) {
+  /*if (engageable) {
     SubMaster &sm = *(uiState()->sm);
     drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, radius / 2 + int(bdr_s * 1.5),
              sm["controlsState"].getControlsState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), 1.0);
-  }
+  }*/
 
   // dm icon
-  if (!hideDM) {
+  /*if (!hideDM) {
     int dm_icon_x = rightHandDM ? rect().right() -  radius / 2 - (bdr_s * 2) : radius / 2 + (bdr_s * 2);
     drawIcon(p, dm_icon_x, rect().bottom() - footer_h / 2,
              dm_img, blackColor(70), dmActive ? 1.0 : 0.2);
-  }
+  }*/
   p.restore();
 }
 
@@ -407,6 +415,14 @@ void AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &t
   real_rect.moveCenter({x, y - real_rect.height() / 2});
 
   p.setPen(QColor(0xff, 0xff, 0xff, alpha));
+  p.drawText(real_rect.x(), real_rect.bottom(), text);
+}
+
+void AnnotatedCameraWidget::drawTextwColor(QPainter &p, QColor color, int x, int y, const QString &text) {
+  QRect real_rect = getTextRect(p, 0, text);
+  real_rect.moveCenter({x, y - real_rect.height() / 2});
+
+  p.setPen(color);
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
 
@@ -530,6 +546,14 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
   QPointF chevron[] = {{x + (sz * 1.25), y + sz}, {x, y}, {x - (sz * 1.25), y + sz}};
   painter.setBrush(redColor(fillAlpha));
   painter.drawPolygon(chevron, std::size(chevron));
+
+  // Draw lead speed
+  float lead_speed_rel = v_rel * (is_metric ? MS_TO_KPH : MS_TO_MPH);
+  QString speedStr = QString::number(std::nearbyint(speed + lead_speed_rel));
+  configFont(painter, "Inter", 60, "Regular");
+  drawTextwColor(painter, QColor(218, 202, 37, 255), x, y+103, speedStr);
+  configFont(painter, "Inter", 40, "Regular");
+  drawTextwColor(painter, QColor(218, 202, 37, 255), x, y+140, speedUnit);
 
   painter.restore();
 }
