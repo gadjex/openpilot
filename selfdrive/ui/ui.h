@@ -99,6 +99,7 @@ typedef struct UIScene {
   QPolygonF track_vertices;
   QPolygonF lane_line_vertices[4];
   QPolygonF road_edge_vertices[2];
+  QPolygonF blindspot_vertices[2];
 
   // lead
   QPointF lead_vertices[2];
@@ -186,3 +187,4 @@ void update_model(UIState *s, const cereal::ModelDataV2::Reader &model);
 void update_leads(UIState *s, const cereal::RadarState::Reader &radar_state, const cereal::ModelDataV2::XYZTData::Reader &line);
 void update_line_data(const UIState *s, const cereal::ModelDataV2::XYZTData::Reader &line,
                       float y_off, float z_off, QPolygonF *pvd, int max_idx, bool allow_invert);
+void update_blindspot_data(QPolygonF &left_lane_line_vertices, QPolygonF &right_lane_line_vertices, QPolygonF *pvd);

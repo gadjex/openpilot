@@ -79,6 +79,21 @@ void update_line_data(const UIState *s, const cereal::ModelDataV2::XYZTData::Rea
   *pvd = left_points + right_points;
 }
 
+void update_blindspot_data(QPolygonF &left_lane_line_vertices, QPolygonF &right_lane_line_vertices, QPolygonF *pvd) {
+  int count_left = left_lane_line_vertices.count();
+  int count_right = right_lane_line_vertices.count();
+  int max_points = std::max(count_left, count_right) / 2;
+  QPolygonF left_points, right_points;
+	for (int i = 0; i < max_points; i++)
+  {
+    if (i * 2 < count_left)
+	    left_points.push_back(left_lane_line_vertices[count_left-1 - i]);
+    if (i * 2 < count_right)
+	    right_points.push_front(right_lane_line_vertices[i]);
+  }
+  *pvd = left_points + right_points;
+}
+
 void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
   UIScene &scene = s->scene;
   auto model_position = model.getPosition();
@@ -92,6 +107,19 @@ void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
   for (int i = 0; i < std::size(scene.lane_line_vertices); i++) {
     scene.lane_line_probs[i] = lane_line_probs[i];
     update_line_data(s, lane_lines[i], 0.025 * scene.lane_line_probs[i], 0, &scene.lane_line_vertices[i], max_idx);
+  }
+
+  // update blind spots
+  int lane_lines_count = std::size(scene.lane_line_vertices);
+  if (lane_lines_count > 3 && lane_lines_count % 2 == 0) {
+    update_blindspot_data(
+      scene.lane_line_vertices[(lane_lines_count / 2) - 2],
+      scene.lane_line_vertices[(lane_lines_count / 2) - 1], 
+      &scene.blindspot_vertices[0]);
+    update_blindspot_data(
+      scene.lane_line_vertices[lane_lines_count / 2],
+      scene.lane_line_vertices[(lane_lines_count / 2) + 1],
+      &scene.blindspot_vertices[1]);
   }
 
   // update road edges
