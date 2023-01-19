@@ -228,6 +228,9 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   setProperty("status", s.status);
 
   setProperty("brake", sm["carControl"].getCarControl().getActuatorsOutput().getBrake());
+  setProperty("gas", sm["carControl"].getCarControl().getActuatorsOutput().getGas());
+  setProperty("left_blindspot", cs_alive && sm["carState"].getCarState().getLeftBlindspot());
+  setProperty("right_blindspot", cs_alive && sm["carState"].getCarState().getRightBlindspot());
 
   // update engageability and DM icons at 2Hz
   if (sm.frame % (UI_FREQ / 2) == 0) {
@@ -382,11 +385,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   configFont(p, "Inter", 176, "Bold");
   if (brake > 0)
     drawTextwColor(p, redColor(), rect().center().x(), 210, speedStr);
+  else if (gas > 0)
+    drawTextwColor(p, QColor(23, 180, 68, 255), rect().center().x(), 210, speedStr);
   else
     drawText(p, rect().center().x(), 210, speedStr);
+  
   configFont(p, "Inter", 66, "Regular");
   if (brake > 0)
     drawTextwColor(p, redColor(200), rect().center().x(), 290, speedUnit);
+  else if (gas > 0)
+    drawTextwColor(p, QColor(23, 180, 68, 200), rect().center().x(), 290, speedUnit);
   else
     drawText(p, rect().center().x(), 290, speedUnit, 200);
 
@@ -476,6 +484,11 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
     painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
     painter.drawPolygon(scene.lane_line_vertices[i]);
   }
+
+  // draw blindspot lane marker
+  painter.setBrush(QColor::fromRgbF(1.0, 0.0, 0.0, 0.2));
+  if (left_blindspot) painter.drawPolygon(scene.blindspot_vertices[0]);
+  if (right_blindspot) painter.drawPolygon(scene.blindspot_vertices[1]);
 
   // road edges
   for (int i = 0; i < std::size(scene.road_edge_vertices); ++i) {
