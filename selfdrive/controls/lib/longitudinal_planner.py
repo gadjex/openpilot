@@ -24,6 +24,32 @@ A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
 _A_TOTAL_MAX_V = [1.7, 3.2]
 _A_TOTAL_MAX_BP = [20., 40.]
 
+DP_ACCEL_ECO = 0
+DP_ACCEL_NORMAL = 1
+DP_ACCEL_SPORT = 2
+
+# accel profile by @arne182 modified by cgw
+_DP_CRUISE_MIN_V =       [-0.65,  -0.60,  -0.73, -0.75,  -0.75, -0.75]
+_DP_CRUISE_MIN_V_ECO =   [-0.65,  -0.60,  -0.70, -0.70,  -0.65, -0.65]
+_DP_CRUISE_MIN_V_SPORT = [-0.70,  -0.80,  -0.90, -0.90,  -0.80, -0.70]
+_DP_CRUISE_MIN_BP =      [0.,     0.07,   10.,   20.,    30.,   55.]
+
+_DP_CRUISE_MAX_V =       [3.5, 3.4, 2.1, 1.6, 1.1, 0.91, 0.68, 0.44, 0.34, 0.13]
+_DP_CRUISE_MAX_V_ECO =   [3.0, 1.7, 1.3, 0.7, 0.6, 0.44, 0.32, 0.22, 0.16, 0.0078]
+_DP_CRUISE_MAX_V_SPORT = [3.5, 3.5, 3.4, 3.0, 2.1, 1.61, 1.1,  0.63, 0.50, 0.33]
+_DP_CRUISE_MAX_BP =      [0.,  3,   6.,  8.,  11., 15.,  20.,  25.,  30.,  55.]
+
+def dp_calc_cruise_accel_limits(v_ego, dp_profile):
+  if dp_profile == DP_ACCEL_ECO:
+    a_cruise_min = interp(v_ego, _DP_CRUISE_MIN_BP, _DP_CRUISE_MIN_V_ECO)
+    a_cruise_max = interp(v_ego, _DP_CRUISE_MAX_BP, _DP_CRUISE_MAX_V_ECO)
+  elif dp_profile == DP_ACCEL_SPORT:
+    a_cruise_min = interp(v_ego, _DP_CRUISE_MIN_BP, _DP_CRUISE_MIN_V_SPORT)
+    a_cruise_max = interp(v_ego, _DP_CRUISE_MAX_BP, _DP_CRUISE_MAX_V_SPORT)
+  else:
+    a_cruise_min = interp(v_ego, _DP_CRUISE_MIN_BP, _DP_CRUISE_MIN_V)
+    a_cruise_max = interp(v_ego, _DP_CRUISE_MAX_BP, _DP_CRUISE_MAX_V)
+  return a_cruise_min, a_cruise_max
 
 def get_max_accel(v_ego):
   return interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
@@ -93,7 +119,8 @@ class LongitudinalPlanner:
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
     if self.mpc.mode == 'acc':
-      accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
+      #accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
+      accel_limits = dp_calc_cruise_accel_limits(v_ego, DP_ACCEL_SPORT)
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
     else:
       accel_limits = [MIN_ACCEL, MAX_ACCEL]
