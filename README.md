@@ -6,11 +6,11 @@ What is openpilot?
 What is this fork for?
 ------
 
-Ridgeline is my personal fork I am using for my 2022 Honda Ridgeline. It "should" work well on all 2021 - 2023 Honda Ridgelines. Things are tuned to my taste and may not reflect yours. If you see a bug please let me know. I am open to suggested changes if they align with my tastes.
+Ridgeline is my personal fork I am using for my 2022 Honda Ridgeline. It "should" work well on all 2021 - 2023 Honda Ridgelines and many of the features "should" work well on all offically supported vehicles. Things are tuned to my taste and may not reflect yours. If you see a bug please let me know. I am open to suggested changes if they align with my tastes and abilities.
 
 **USE THIS FORK AT YOUR OWN RISK. STAY ALERT AND ALWAYS BE READY TO TAKE OVER.**
 
-Ridgeline Fork Enhancements
+Fork Enhancements
 ------
 
 - Switched short button press to 5 mph and long press to 1 mph
