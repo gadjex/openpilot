@@ -19,7 +19,7 @@ Ridgeline Fork Enhancements
 - Better longitudinal tune for Honda Ridgeline with comma pedal
   - Smooth complete stops
   - Stops a little further back from a vehicle
-  - Sporty acceleration
+  - Acceleration profile depends on set max speed
   - Follows max speed set and not below it
 - Torque Lateral Controller enabled and tuned
   - Reduces ping pongs
