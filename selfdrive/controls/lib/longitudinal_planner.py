@@ -39,7 +39,14 @@ _DP_CRUISE_MAX_V_ECO =   [3.0, 1.7, 1.3, 0.7, 0.6, 0.44, 0.32, 0.22, 0.16, 0.007
 _DP_CRUISE_MAX_V_SPORT = [3.5, 3.5, 3.4, 3.0, 2.1, 1.61, 1.1,  0.63, 0.50, 0.33]
 _DP_CRUISE_MAX_BP =      [0.,  3,   6.,  8.,  11., 15.,  20.,  25.,  30.,  55.]
 
-def dp_calc_cruise_accel_limits(v_ego, dp_profile):
+def dp_calc_cruise_accel_limits(v_ego, v_cruise, hasLead):
+  # normal limits unless no lead and cruise set above 50 mph
+  dp_profile = DP_ACCEL_NORMAL
+  if (not hasLead and v_cruise > 22.5):
+    dp_profile = DP_ACCEL_SPORT
+  elif (v_cruise < 11.5):
+    dp_profile = DP_ACCEL_ECO
+
   if dp_profile == DP_ACCEL_ECO:
     a_cruise_min = interp(v_ego, _DP_CRUISE_MIN_BP, _DP_CRUISE_MIN_V_ECO)
     a_cruise_max = interp(v_ego, _DP_CRUISE_MAX_BP, _DP_CRUISE_MAX_V_ECO)
@@ -120,7 +127,8 @@ class LongitudinalPlanner:
 
     if self.mpc.mode == 'acc':
       #accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
-      accel_limits = dp_calc_cruise_accel_limits(v_ego, DP_ACCEL_SPORT)
+      hasLead = sm['radarState'].leadOne.status or sm['radarState'].leadTwo.status
+      accel_limits = dp_calc_cruise_accel_limits(v_ego, v_cruise, hasLead)
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
     else:
       accel_limits = [MIN_ACCEL, MAX_ACCEL]
