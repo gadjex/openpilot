@@ -2,8 +2,9 @@
 
 #include <QAbstractTableModel>
 #include <QTableView>
+#include <QStyledItemDelegate>
 
-#include "tools/cabana/canmessages.h"
+#include "tools/cabana/streams/abstractstream.h"
 
 class MessageListModel : public QAbstractTableModel {
 Q_OBJECT
@@ -31,6 +32,8 @@ class MessagesWidget : public QWidget {
 
 public:
   MessagesWidget(QWidget *parent);
+  void selectMessage(const QString &message_id);
+
 signals:
   void msgSelectionChanged(const QString &message_id);
 
