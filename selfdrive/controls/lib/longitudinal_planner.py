@@ -9,7 +9,7 @@ from common.filter_simple import FirstOrderFilter
 from common.realtime import DT_MDL
 from selfdrive.modeld.constants import T_IDXS
 from selfdrive.controls.lib.longcontrol import LongCtrlState
-from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, MIN_ACCEL, MAX_ACCEL
+from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, MIN_ACCEL, MAX_ACCEL, T_FOLLOW
 from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N
 from system.swaglog import cloudlog
@@ -23,6 +23,13 @@ A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
 # Lookup table for turns
 _A_TOTAL_MAX_V = [1.7, 3.2]
 _A_TOTAL_MAX_BP = [20., 40.]
+
+#DP_FOLLOWING_DIST = {
+#  0: 1.0,
+#  1: 1.2,
+#  2: 1.4,
+#  3: 1.8,
+#}
 
 DP_ACCEL_ECO = 0
 DP_ACCEL_NORMAL = 1
@@ -79,6 +86,10 @@ def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
 
 class LongitudinalPlanner:
   def __init__(self, CP, init_v=0.0, init_a=0.0):
+    # dp
+    self.dp_following_profile_ctrl = False
+    self.dp_following_profile = 0
+
     self.CP = CP
     self.mpc = LongitudinalMpc()
     self.fcw = False
@@ -108,7 +119,34 @@ class LongitudinalPlanner:
       j = np.zeros(len(T_IDXS_MPC))
     return x, v, a, j
 
+  def get_df(self, v_ego):
+    desired_tf = T_FOLLOW
+    if self.mpc.mode == 'blended':
+      return desired_tf
+    if self.dp_following_profile_ctrl:
+      if self.dp_following_profile == 0:
+        x_vel =  [0,    3.,    13.89,  25.0,  41.67]
+        y_dist = [1.32, 1.38,  1.38,   1.26,   1.32]
+        desired_tf = np.interp(v_ego, x_vel, y_dist)
+      elif self.dp_following_profile == 1:
+        x_vel =  [0,    5.556,   13.89,   41.67]
+        y_dist = [1.35,  1.460,   1.5000,  1.68]
+        desired_tf = np.interp(v_ego, x_vel, y_dist)
+      elif self.dp_following_profile == 2:
+        x_vel =  [0,    5.556,  19.7,   41.67]
+        y_dist = [1.4,  1.5,   2.0,    2.2]
+        desired_tf = np.interp(v_ego, x_vel, y_dist)
+      else:
+        x_vel =  [0,    5.556,  19.7,   41.67]
+        y_dist = [1.4,  1.75,   2.25,    2.45]
+        desired_tf = np.interp(v_ego, x_vel, y_dist)
+    return desired_tf
+
   def update(self, sm):
+    # dp
+    #self.dp_following_profile_ctrl = sm['dragonConf'].dpFollowingProfileCtrl
+    #self.dp_following_profile = sm['dragonConf'].dpFollowingProfile
+
     self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
 
     v_ego = sm['carState'].vEgo
@@ -126,7 +164,6 @@ class LongitudinalPlanner:
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
     if self.mpc.mode == 'acc':
-      #accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
       hasLead = sm['radarState'].leadOne.status or sm['radarState'].leadTwo.status
       accel_limits = dp_calc_cruise_accel_limits(v_ego, v_cruise, hasLead)
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
@@ -153,11 +190,13 @@ class LongitudinalPlanner:
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
 
-    self.mpc.set_weights(prev_accel_constraint)
+    # dp - mpc.set_weights calls moved to mpc.update function because we need lead0 and lead1 data
+    #self.mpc.set_weights(prev_accel_constraint)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
-    self.mpc.update(sm['carState'], sm['radarState'], v_cruise, x, v, a, j)
+    desired_tf = self.get_df(v_ego)
+    self.mpc.update(sm['carState'], sm['radarState'], v_cruise, x, v, a, j, prev_accel_constraint, desired_tf)
 
     self.v_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC, self.mpc.a_solution)

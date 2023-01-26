@@ -277,6 +277,9 @@ class CarInterfaceBase(ABC):
       # Disable on rising and falling edge of cancel for both stock and OP long
       if b.type == ButtonType.cancel:
         events.add(EventName.buttonCancel)
+      # Adjust follow distance on rising edge for OP long
+      #if not self.CP.pcmCruise and (b.type == ButtonType.gapAdjustCruise and b.pressed):
+
 
     # Handle permanent and temporary steering faults
     self.steering_unpressed = 0 if cs_out.steeringPressed else self.steering_unpressed + 1
