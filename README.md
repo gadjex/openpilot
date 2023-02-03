@@ -16,20 +16,21 @@ Fork Enhancements
 - Switched short button press to 5 mph and long press to 1 mph
 - Turned off "normal" engagement and disengagement sounds. Alerts sounds have not been touched.
 - Shortened 30 hour off-road until shutdown to 6 hours
-- Better longitudinal tune for Honda Ridgeline with comma pedal
+- Better longitudinal tune for Honda vehicles with the comma pedal
   - Smooth complete stops
   - Stops a little further back from a vehicle
   - Acceleration profile depends on set max speed
-  - Follows max speed set and not below it
-- Torque Lateral Controller enabled and tuned
+  - Can maintain max speed set and not below it
+- Torque Lateral Controller enabled and auto tuned enabled
   - Reduces ping pongs
   - Smoother steering wheel motion
+  - Honda Ridgeline Tune params updated
 - Blind Spot Monitoring [(see this repo)](https://github.com/gadjex/CAN_Gateway/tree/Ridgeline-Body-Gateway)
   - The lane to left and/or right will be highlighted in red when a vehicle is in your blind spot.
   - Automated lane change will not be allowed if a vehicle is in your blind spot.
 - UI Changes
   - Removed engageable and driver monitor icons. Driver monitor is still and will always be enabled!
-  - Change speed color depending on it openpilot is braking (red), accelerating (green), coasting or not engaged (white).
+  - Change speed color depending on if openpilot is braking (red), accelerating (green), coasting or not engaged (white).
 
 Licensing
 ------
