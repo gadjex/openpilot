@@ -69,14 +69,22 @@ class CarInterface(CarInterfaceBase):
     # For modeling details, see p.198-200 in "The Science of Vehicle Dynamics (2014), M. Guiggiani"
     ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0], [0]]
     ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
-    ret.lateralTuning.pid.kf = 0.00006  # conservative feed-forward
-    ret.steerActuatorDelay = 0.1
+    ret.lateralTuning.pid.kf = 1
+    ret.steerActuatorDelay = 0.2
     ret.steerLimitTimer = 0.8
 
     if candidate in HONDA_BOSCH:
       ret.longitudinalTuning.kpV = [0.25]
       ret.longitudinalTuning.kiV = [0.05]
       ret.longitudinalActuatorDelayUpperBound = 0.5 # s
+    elif ret.enableGasInterceptor:
+      ret.vEgoStopping = 0.15 # reduce "slam stop"
+      ret.stopAccel = -0.5 # reduced from -2.0 to test hill holding capability and see what value is best
+      ret.stoppingDecelRate = 0.15 # brake_travel/s (m/s^2/s) while trying to fully stop. Reach stopping target smoothly default = 0.8
+      ret.longitudinalTuning.kpBP = [0., 5., 35.] # mph = [0, 11, 78]
+      ret.longitudinalTuning.kpV = [1.4, 1.6, 1.4] # adjusted because OP is not stopping the car fast enough.
+      ret.longitudinalTuning.kiBP = [0., 35.]
+      ret.longitudinalTuning.kiV = [0.25, 0.12]
     else:
       # default longitudinal tuning for all hondas
       ret.longitudinalTuning.kpBP = [0., 5., 35.]
@@ -235,11 +243,11 @@ class CarInterface(CarInterfaceBase):
       else:
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096], [0, 4096]]  # TODO: determine if there is a dead zone at the top end
 
-    elif candidate in (CAR.PILOT, CAR.PASSPORT):
-      ret.mass = 4204. * CV.LB_TO_KG + STD_CARGO_KG  # average weight
-      ret.wheelbase = 2.82
+    elif candidate == CAR.PILOT:
+      ret.mass = 4278. * CV.LB_TO_KG + STD_CARGO_KG  # average weight
+      ret.wheelbase = 2.86
       ret.centerToFront = ret.wheelbase * 0.428
-      ret.steerRatio = 17.25  # as spec
+      ret.steerRatio = 16.0  # as spec
       ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096], [0, 4096]]  # TODO: determine if there is a dead zone at the top end
       tire_stiffness_factor = 0.444
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.38], [0.11]]
@@ -249,22 +257,11 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 3.18
       ret.centerToFront = ret.wheelbase * 0.41
       ret.steerRatio = 15.86  # specs: 15.59 for 2017-20 , 15.86 for 2021-23
-      ret.vEgoStopping = 0.15 # reduced from 0.5 to reduce "slam stop"
-      ret.stopAccel = -0.5 # reduced from -2.0 to test hill holding capability and see what value is best
-      ret.stoppingDecelRate = 0.15 # brake_travel/s (m/s^2/s) while trying to fully stop. Reach stopping target smoothly default = 0.8
       ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096], [0, 4096]]  # TODO: determine if there is a dead zone at the top end
       ret.steerActuatorDelay = 0.17
       tire_stiffness_factor = 0.444
       #ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.38], [0.11]]
-      #ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]] # [[0.], [0.]]
-      #ret.lateralTuning.pid.kf = 0.00006  # conservative feed-forward
-      CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning) # Use Lateral Torque Controller instead of PIF
-      ret.longitudinalTuning.kpBP = [0., 5., 35.] # mph = [0, 11, 78]
-      ret.longitudinalTuning.kpV = [1.4, 1.6, 1.4] # adjustment from [1.2, 0.8, 0.5] because OP is not stopping the car fast enough.
-      ret.longitudinalTuning.kiBP = [0., 35.]
-      ret.longitudinalTuning.kiV = [0.25, 0.12]
-      ret.longitudinalTuning.deadzoneBP = [0.]
-      ret.longitudinalTuning.deadzoneV = [0.]
+      CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning) # Use Lateral Torque Controller instead of PI controller
 
     elif candidate == CAR.INSIGHT:
       ret.mass = 2987. * CV.LB_TO_KG + STD_CARGO_KG
