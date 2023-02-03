@@ -36,7 +36,7 @@ MAX_INVALID_THRESHOLD = 10
 MIN_ENGAGE_BUFFER = 2  # secs
 
 VERSION = 1  # bump this to invalidate old parameter caches
-ALLOWED_CARS = ['toyota', 'hyundai']
+ALLOWED_CARS = ['toyota', 'hyundai', 'honda']
 ALLOWED_PLATFORMS = ['RAM 1500 5TH GEN']  # for adding individual platforms from a brand without torqued
 
 
