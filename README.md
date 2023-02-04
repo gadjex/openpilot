@@ -6,7 +6,7 @@ What is openpilot?
 What is this fork for?
 ------
 
-Ridgeline is my personal fork I am using for my 2022 Honda Ridgeline. It "should" work well on all 2021 - 2023 Honda Ridgelines and many of the features "should" work well on all offically supported vehicles especially Honda vehicles. Things are tuned to my taste and may not reflect yours. If you see a bug please let me know. I am open to suggested changes if they align with my tastes and abilities.
+Ridgeline is my personal fork I am using for my 2022 Honda Ridgeline. It "should" work well on all 2021 - 2023 Honda Ridgelines and many of the features "should" work well on all offically supported vehicles especially Honda Nidec vehicles. Things are tuned to my taste and may not reflect yours. If you see a bug please let me know. I am open to suggested changes if they align with my tastes and abilities.
 
 **USE THIS FORK AT YOUR OWN RISK. STAY ALERT AND ALWAYS BE READY TO TAKE OVER.**
 
@@ -21,7 +21,7 @@ Fork Enhancements
   - Stops a little further back from a vehicle
   - Acceleration profile depends on set max speed
   - Can maintain max speed set and not below it
-- Torque Lateral Controller enabled and auto tuned enabled
+- Torque Lateral Controller enabled and auto tuned enabled for Honda Ridgeline
   - Reduces ping pongs
   - Smoother steering wheel motion
   - Honda Ridgeline Tune params updated
@@ -31,6 +31,7 @@ Fork Enhancements
 - UI Changes
   - Removed engageable and driver monitor icons. Driver monitor is still and will always be enabled!
   - Change speed color depending on if openpilot is braking (red), accelerating (green), coasting or not engaged (white).
+- Change follow distance in Honda Nidec vehicles
 
 Licensing
 ------
