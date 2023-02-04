@@ -195,7 +195,7 @@ class FollowDistanceHelper:
   def __init__(self, CP):
     self.CP = CP
     self.params = Params()
-    self.follow_distance = 0
+    self.follow_distance = 3
     self.show_distance = False
     self.last_show_on_disabled = sec_since_boot()
     if self.params.get("gjx_FollowDistance") is not None:
