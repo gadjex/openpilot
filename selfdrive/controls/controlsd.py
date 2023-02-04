@@ -16,7 +16,7 @@ from system.version import is_release_branch, get_short_branch
 from selfdrive.boardd.boardd import can_list_to_can_capnp
 from selfdrive.car.car_helpers import get_car, get_startup_event, get_one_can
 from selfdrive.controls.lib.lateral_planner import CAMERA_OFFSET
-from selfdrive.controls.lib.drive_helpers import VCruiseHelper, get_lag_adjusted_curvature
+from selfdrive.controls.lib.drive_helpers import VCruiseHelper, get_lag_adjusted_curvature, FollowDistanceHelper
 from selfdrive.controls.lib.latcontrol import LatControl, MIN_LATERAL_CONTROL_SPEED
 from selfdrive.controls.lib.longcontrol import LongControl
 from selfdrive.controls.lib.latcontrol_pid import LatControlPID
@@ -183,6 +183,7 @@ class Controls:
     self.desired_curvature = 0.0
     self.desired_curvature_rate = 0.0
     self.v_cruise_helper = VCruiseHelper(self.CP)
+    self.follow_distance_helper = FollowDistanceHelper(self.CP)
 
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
@@ -465,6 +466,7 @@ class Controls:
     """Compute conditional state transitions and execute actions on state transitions"""
 
     self.v_cruise_helper.update_v_cruise(CS, self.enabled, self.is_metric)
+    self.follow_distance_helper.update_follow_distance(CS, self.enabled)
 
     # decrement the soft disable timer at every step, as it's reset on
     # entrance in SOFT_DISABLING state
@@ -687,6 +689,8 @@ class Controls:
 
     hudControl.rightLaneVisible = True
     hudControl.leftLaneVisible = True
+    hudControl.followDistance = self.follow_distance_helper.follow_distance
+    hudControl.showDistance = self.follow_distance_helper.show_distance
 
     recent_blinker = (self.sm.frame - self.last_blinker_frame) * DT_CTRL < 5.0  # 5s blinker cooldown
     ldw_allowed = self.is_ldw_enabled and CS.vEgo > LDW_MIN_SPEED and not recent_blinker \
@@ -776,6 +780,7 @@ class Controls:
     controlsState.forceDecel = bool(force_decel)
     controlsState.canErrorCounter = self.can_rcv_timeout_counter
     controlsState.experimentalMode = self.params.get_bool("ExperimentalMode") and self.CP.openpilotLongitudinalControl
+    controlsState.followDistance = self.follow_distance_helper.follow_distance
 
     lat_tuning = self.CP.lateralTuning.which()
     if self.joystick_mode:

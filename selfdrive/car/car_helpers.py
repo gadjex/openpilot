@@ -17,10 +17,13 @@ EventName = car.CarEvent.EventName
 
 
 def get_startup_event(car_recognized, controller_available, fw_seen):
-  #if is_comma_remote() and is_tested_branch():
-  #  event = EventName.startup
-  #else:
-  #  event = EventName.startupMaster
+  params = Params()
+  disableStatupWarning = params.get_bool("gjx_DisableStartupWarning")
+  
+  if (is_comma_remote() and is_tested_branch()) or disableStatupWarning:
+    event = EventName.startup
+  else:
+    event = EventName.startupMaster
 
   if not car_recognized:
     if fw_seen:
@@ -29,8 +32,6 @@ def get_startup_event(car_recognized, controller_available, fw_seen):
       event = EventName.startupNoFw
   elif car_recognized and not controller_available:
     event = EventName.startupNoControl
-  else:
-    event = EventName.startup
   return event
 
 

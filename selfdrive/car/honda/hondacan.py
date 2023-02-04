@@ -112,7 +112,7 @@ def create_ui_commands(packer, CP, enabled, pcm_speed, hud, is_metric, acc_hud, 
     acc_hud_values = {
       'CRUISE_SPEED': hud.v_cruise,
       'ENABLE_MINI_CAR': 1 if enabled else 0,
-      'HUD_DISTANCE': 0,  # max distance setting on display
+      'HUD_DISTANCE': hud.hud_distance,
       'IMPERIAL_UNIT': int(not is_metric),
       'HUD_LEAD': 2 if enabled and hud.lead_visible else 1 if enabled else 0,
       'SET_ME_X01_2': 1,
@@ -123,6 +123,7 @@ def create_ui_commands(packer, CP, enabled, pcm_speed, hud, is_metric, acc_hud, 
       acc_hud_values['FCM_OFF'] = 1
       acc_hud_values['FCM_OFF_2'] = 1
     else:
+      acc_hud_values['ACC_ON'] = int(hud.show_distance)
       acc_hud_values['PCM_SPEED'] = pcm_speed * CV.MS_TO_KPH
       acc_hud_values['PCM_GAS'] = hud.pcm_accel
       acc_hud_values['SET_ME_X01'] = 1

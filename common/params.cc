@@ -162,6 +162,8 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"RecordFront", PERSISTENT},
     {"RecordFrontLock", PERSISTENT},  // for the internal fleet
     {"ReplayControlsState", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_ON},
+    {"gjx_DisableStartupWarning", PERSISTENT | DONT_LOG},
+    {"gjx_FollowDistance", PERSISTENT},
     {"ShouldDoUpdate", CLEAR_ON_MANAGER_START},
     {"SnoozeUpdate", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_OFF},
     {"SshEnabled", PERSISTENT},

@@ -118,33 +118,32 @@ class LongitudinalPlanner:
       j = np.zeros(len(T_IDXS_MPC))
     return x, v, a, j
 
+  # dp/gadjex
   def get_df(self, v_ego):
     desired_tf = T_FOLLOW
     if self.mpc.mode == 'blended':
       return desired_tf
-    if self.dp_following_profile_ctrl:
-      if self.dp_following_profile == 0:
-        x_vel =  [0,    3.,    13.89,  25.0,  41.67]
-        y_dist = [1.32, 1.38,  1.38,   1.26,   1.32]
-        desired_tf = np.interp(v_ego, x_vel, y_dist)
-      elif self.dp_following_profile == 1:
-        x_vel =  [0,    5.556,   13.89,   41.67]
-        y_dist = [1.35,  1.460,   1.5000,  1.68]
-        desired_tf = np.interp(v_ego, x_vel, y_dist)
-      elif self.dp_following_profile == 2:
-        x_vel =  [0,    5.556,  19.7,   41.67]
-        y_dist = [1.4,  1.5,   2.0,    2.2]
-        desired_tf = np.interp(v_ego, x_vel, y_dist)
-      else:
-        x_vel =  [0,    5.556,  19.7,   41.67]
-        y_dist = [1.4,  1.75,   2.25,    2.45]
-        desired_tf = np.interp(v_ego, x_vel, y_dist)
+    if self.dp_following_profile == 1:
+      x_vel =  [0,    3.,    13.89,  25.0,  41.67]
+      y_dist = [1.32, 1.38,  1.38,   1.26,   1.32]
+      desired_tf = np.interp(v_ego, x_vel, y_dist)
+    elif self.dp_following_profile == 2:
+      x_vel =  [0,    5.556,   13.89,   41.67]
+      y_dist = [1.35,  1.460,   1.5000,  1.68]
+      desired_tf = np.interp(v_ego, x_vel, y_dist)
+    elif self.dp_following_profile == 3:
+      x_vel =  [0,    5.556,  19.7,   41.67]
+      y_dist = [1.4,  1.5,   2.0,    2.2]
+      desired_tf = np.interp(v_ego, x_vel, y_dist)
+    else:
+      x_vel =  [0,    5.556,  19.7,   41.67]
+      y_dist = [1.4,  1.75,   2.25,    2.45]
+      desired_tf = np.interp(v_ego, x_vel, y_dist)
     return desired_tf
 
   def update(self, sm):
-    # dp
-    #self.dp_following_profile_ctrl = sm['dragonConf'].dpFollowingProfileCtrl
-    #self.dp_following_profile = sm['dragonConf'].dpFollowingProfile
+    # dp/gadjex
+    self.dp_following_profile = sm['controlsState'].followDistance
 
     self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
 
