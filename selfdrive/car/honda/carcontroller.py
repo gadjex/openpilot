@@ -98,7 +98,7 @@ def process_hud_alert(hud_alert):
 
 HUDData = namedtuple("HUDData",
                      ["pcm_accel", "v_cruise", "lead_visible",
-                      "lanes_visible", "fcw", "acc_alert", "steer_required"])
+                      "lanes_visible", "fcw", "acc_alert", "steer_required", "hud_distance", "show_distance"])
 
 
 def rate_limit_steer(new_steer, last_steer):
@@ -255,7 +255,8 @@ class CarController:
     if self.frame % 10 == 0:
       hud_set_speed = calculate_hud_set_speed(hud_v_cruise, CS.is_metric)
       hud = HUDData(int(pcm_accel), hud_set_speed, hud_control.leadVisible,
-                    hud_control.lanesVisible, fcw_display, acc_alert, steer_required)
+                    hud_control.lanesVisible, fcw_display, acc_alert, steer_required,
+                    hud_control.followDistance, hud_control.showDistance)
       can_sends.extend(hondacan.create_ui_commands(self.packer, self.CP, CC.enabled, pcm_speed, hud, CS.is_metric, CS.acc_hud, CS.lkas_hud))
 
       if self.CP.openpilotLongitudinalControl and self.CP.carFingerprint not in HONDA_BOSCH:

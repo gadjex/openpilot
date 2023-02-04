@@ -5,6 +5,8 @@ from common.conversions import Conversions as CV
 from common.numpy_fast import clip, interp
 from common.realtime import DT_MDL
 from selfdrive.modeld.constants import T_IDXS
+from common.params import Params, put_nonblocking
+from common.realtime import sec_since_boot
 
 # WARNING: this value was determined based on the model's training distribution,
 #          model predictions above this speed can be unpredictable
@@ -188,3 +190,43 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
                                 current_curvature_desired + max_curvature_rate * DT_MDL)
 
   return safe_desired_curvature, safe_desired_curvature_rate
+
+class FollowDistanceHelper:
+  def __init__(self, CP):
+    self.CP = CP
+    self.params = Params()
+    self.follow_distance = 0
+    self.show_distance = False
+    self.last_show_on_disabled = sec_since_boot()
+    if self.params.get("gjx_FollowDistance") is not None:
+      self.follow_distance = int(self.params.get("gjx_FollowDistance"))
+  
+  def update_follow_distance(self, CS, enabled):
+    if (self.CP.pcmCruise):
+      self.show_distance = enabled
+      self.follow_distance = 0
+      return
+
+    allowDistanceChange = enabled or self.show_distance
+    if (enabled):
+        self.show_distance = True
+    elif (self.show_distance):
+      now = sec_since_boot()
+      if (now - self.last_show_on_disabled >= 3):
+        self.show_distance = False
+
+    # change follow distance from furthest to closest and repeat
+    # 0 = longest, 3 = long, 2 = short, 1 = shortest
+    for btnEvent in CS.buttonEvents:
+      if (btnEvent.type == ButtonType.gapAdjustCruise and btnEvent.pressed):
+        # don't change, only show in first button press if not enabled
+        if (allowDistanceChange):
+          if (self.follow_distance == 0):
+            self.follow_distance = 3
+          else:
+            self.follow_distance -= 1
+          put_nonblocking("gjx_FollowDistance", str(int(self.follow_distance)))
+        
+        if (not enabled):
+          self.show_distance = True
+          self.last_show_on_disabled = sec_since_boot()
