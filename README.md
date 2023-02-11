@@ -31,7 +31,8 @@ Fork Enhancements
 - UI Changes
   - Removed engageable and driver monitor icons. Driver monitor is still and will always be enabled!
   - Change speed color depending on if openpilot is braking (red), accelerating (green), coasting or not engaged (white).
-- Change follow distance in Honda Nidec vehicles
+- Change follow distance in Honda Nidec vehicles like OEM
+- Full HUD on instrument cluster unless engaged or changing follow distance similar OEM
 
 Licensing
 ------
