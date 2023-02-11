@@ -29,7 +29,7 @@ Fork Enhancements
   - The lane to left and/or right will be highlighted in red when a vehicle is in your blind spot.
   - Automated lane change will not be allowed if a vehicle is in your blind spot.
 - UI Changes
-  - Removed engageable and driver monitor icons. Driver monitor is still and will always be enabled!
+  - Removed driver monitor icon. Driver monitor is still and will always be enabled!
   - Change speed color depending on if openpilot is braking (red), accelerating (green), coasting or not engaged (white).
 - Change follow distance in Honda Nidec vehicles like OEM
 - Full HUD on instrument cluster unless engaged or changing follow distance similar OEM
