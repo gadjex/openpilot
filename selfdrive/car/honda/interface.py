@@ -258,7 +258,6 @@ class CarInterface(CarInterfaceBase):
       ret.centerToFront = ret.wheelbase * 0.41
       ret.steerRatio = 15.86  # specs: 15.59 for 2017-20 , 15.86 for 2021-23
       ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096], [0, 4096]]  # TODO: determine if there is a dead zone at the top end
-      ret.steerActuatorDelay = 0.17
       tire_stiffness_factor = 0.444
       #ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.38], [0.11]]
       CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning) # Use Lateral Torque Controller instead of PI controller
