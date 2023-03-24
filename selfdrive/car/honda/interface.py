@@ -69,8 +69,8 @@ class CarInterface(CarInterfaceBase):
     # For modeling details, see p.198-200 in "The Science of Vehicle Dynamics (2014), M. Guiggiani"
     ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0], [0]]
     ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
-    ret.lateralTuning.pid.kf = 1
-    ret.steerActuatorDelay = 0.2
+    ret.lateralTuning.pid.kf = 0.00006  # conservative feed-forward
+    ret.steerActuatorDelay = 0.1
     ret.steerLimitTimer = 0.8
 
     if candidate in HONDA_BOSCH:
@@ -256,10 +256,12 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 4575. * CV.LB_TO_KG + STD_CARGO_KG
       ret.wheelbase = 3.18
       ret.centerToFront = ret.wheelbase * 0.41
-      ret.steerRatio = 15.86  # specs: 15.59 for 2017-20 , 15.86 for 2021-23
+      ret.steerRatio = 15.59  # specs: 15.59 for 2017-20 , 15.86 for 2021-23
       ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096], [0, 4096]]  # TODO: determine if there is a dead zone at the top end
       tire_stiffness_factor = 0.444
       #ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.38], [0.11]]
+      ret.lateralTuning.pid.kf = 1.0
+      ret.steerActuatorDelay = 0.2
       CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning) # Use Lateral Torque Controller instead of PI controller
 
     elif candidate == CAR.INSIGHT:
