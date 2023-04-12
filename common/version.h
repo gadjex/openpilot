@@ -1,1 +1,1 @@
-#define COMMA_VERSION "0.9.1-Gadjex"
+#define COMMA_VERSION "0.9.2-Gadjex"
