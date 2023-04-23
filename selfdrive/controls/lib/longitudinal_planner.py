@@ -48,7 +48,7 @@ _DP_CRUISE_MAX_BP =      [0.,  3,   6.,  8.,  11., 15.,  20.,  25.,  30.,  55.]
 def dp_calc_cruise_accel_limits(v_ego, v_cruise, hasLead):
   # normal limits unless no lead and cruise set above 50 mph
   dp_profile = DP_ACCEL_NORMAL
-  if (not hasLead and v_cruise > 22.5):
+  if ((not hasLead or (hasLead and v_ego > 7)) and v_cruise > 22.5):
     dp_profile = DP_ACCEL_SPORT
   elif (v_cruise < 11.5):
     dp_profile = DP_ACCEL_ECO
