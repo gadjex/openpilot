@@ -14,6 +14,7 @@ from common.conversions import Conversions as CV
 from common.kalman.simple_kalman import KF1D
 from common.numpy_fast import clip, interp
 from common.realtime import DT_CTRL
+from system.swaglog import cloudlog
 from selfdrive.car import apply_hysteresis, gen_empty_fingerprint, scale_rot_inertia, scale_tire_stiffness
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, apply_center_deadzone
 from selfdrive.controls.lib.events import Events
@@ -61,6 +62,9 @@ class FluxModel:
     if not self.test_passed:
       raise ValueError(f"NN FF model failed test: {params_file}")
 
+    cloudlog.info(f"NN FF model loaded")
+    cloudlog.info(self.summary(do_print=False))
+    
   # Begin activation functions.
   # These are called by name using the keys in the model json file
   def sigmoid(self, x):
