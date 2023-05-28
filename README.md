@@ -17,10 +17,9 @@ Fork Enhancements
 - Turned off "normal" engagement and disengagement sounds. Alerts sounds have not been touched.
 - Shortened 30 hour off-road until shutdown to 6 hours
 - Better longitudinal tune for Honda vehicles with the comma pedal
-  - Smooth complete stops
+  - Smoother complete stops
   - Stops a little further back from a vehicle
   - Acceleration profile depends on set max speed
-  - Can maintain max speed set and not below it
 - Torque Lateral Controller enabled and auto tuned enabled for Honda Ridgeline
   - Reduces ping pongs
   - Smoother steering wheel motion
