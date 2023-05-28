@@ -78,11 +78,11 @@ class CarInterface(CarInterfaceBase):
       ret.longitudinalTuning.kiV = [0.05]
       ret.longitudinalActuatorDelayUpperBound = 0.5 # s
     elif ret.enableGasInterceptor:
-      ret.vEgoStopping = 0.15 # reduce "slam stop"
-      ret.stopAccel = -0.5 # reduced from -2.0 to test hill holding capability and see what value is best
-      ret.stoppingDecelRate = 0.15 # brake_travel/s (m/s^2/s) while trying to fully stop. Reach stopping target smoothly default = 0.8
+      ret.vEgoStopping = 0.05 # reduce "slam stop"
+      ret.stopAccel = -0.3 # reduced from -2.0 to test hill holding capability and see what value is best
+      ret.stoppingDecelRate = 0.1 # brake_travel/s (m/s^2/s) while trying to fully stop. Reach stopping target smoothly default = 0.8
       ret.longitudinalTuning.kpBP = [0., 5., 35.] # mph = [0, 11, 78]
-      ret.longitudinalTuning.kpV = [1.4, 1.6, 1.4] # adjusted because OP is not stopping the car fast enough.
+      ret.longitudinalTuning.kpV = [1.2, 1.0, 0.8]
       ret.longitudinalTuning.kiBP = [0., 35.]
       ret.longitudinalTuning.kiV = [0.25, 0.12]
     else:
